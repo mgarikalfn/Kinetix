@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { startOfWeek,format , getDay , parse,addMonths,subMonths} from "date-fns";
 import {Calendar ,dateFnsLocalizer} from "react-big-calendar";
@@ -6,7 +7,7 @@ import { enUS } from "date-fns/locale";
 
 import { Task } from "../types";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import  "./data-calendar.css";
+//import  "./data-calendar.css";
 import { EventCard } from "./event-card";
 import { Button } from "@/components/ui/button";
 import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
@@ -63,8 +64,8 @@ export const DataCalendar = ({data}:DataCalendarProps) => {
         start:new Date(task.dueDate),
         end:new Date(task.dueDate),
         title:task.name,
-        project:task.project,
-        assignee:task.assignee,
+        project:task.project ?? null,
+        assignee:task.assignee ?? null,
         status:task.status,
         id:task.$id
     }));
@@ -114,3 +115,4 @@ export const DataCalendar = ({data}:DataCalendarProps) => {
 
     )
 }
+    
