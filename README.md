@@ -93,30 +93,10 @@ npm install
 
 ### 2. Environment Setup
 
-Create a `.env.local` file in the root directory:
+Copy the sample environment configuration and fill in your Appwrite credentials:
 
-```env
-# Application URL
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-
-# Appwrite Cloud Config
-NEXT_PUBLIC_APPWRITE_ENDPOINT=https://fra.cloud.appwrite.io/v1
-NEXT_PUBLIC_APPWRITE_PROJECT=your_project_id
-NEXT_APPWRITE_KEY=your_secret_api_key
-
-# Appwrite Database Collections
-NEXT_PUBLIC_APPWRITE_DATABASE_ID=your_database_id
-NEXT_PUBLIC_APPWRITE_WORKSPACES_ID=workspaces
-NEXT_PUBLIC_APPWRITE_MEMBERS_ID=members
-NEXT_PUBLIC_APPWRITE_PROJECTS_ID=projects
-NEXT_PUBLIC_APPWRITE_TASKS_ID=tasks
-NEXT_PUBLIC_APPWRITE_COMMENTS_ID=comments
-NEXT_PUBLIC_APPWRITE_LIKES_ID=likes
-NEXT_PUBLIC_APPWRITE_ACTIVITY_LOGS=activitylogs
-NEXT_PUBLIC_APPWRITE_ACTIVITYLOGS_ID=activitylogs
-
-# Appwrite Storage
-NEXT_PUBLIC_APPWRITE_IMAGES_BUCKET_ID=your_bucket_id
+```bash
+cp .env.example .env.local
 ```
 
 ### 3. Run Locally
@@ -137,7 +117,7 @@ The project is pre-configured for seamless one-click deployments on Vercel:
 npm run build
 ```
 
-Ensure all environment variables from `.env.local` are mirrored in **Vercel Project Settings ➔ Environment Variables**.
+Ensure your environment variables are configured in **Vercel Project Settings ➔ Environment Variables**.
 
 ---
 
