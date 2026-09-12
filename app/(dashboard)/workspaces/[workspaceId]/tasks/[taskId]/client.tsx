@@ -1,8 +1,7 @@
-"use client"
+"use client";
+
 import { PageError } from "@/components/page-error";
 import { PageLoader } from "@/components/page-loader";
-import { DottedSeparator } from "@/components/ui/dotted-separator";
-
 import { useGetTask } from "@/features/tasks/api/use-get-task";
 import { TaskBreadCrumbs } from "@/features/tasks/components/task-breadcrumbs";
 import { TaskComment } from "@/features/tasks/components/task-comment";
@@ -23,10 +22,9 @@ export const TaskIdClient = () => {
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col gap-y-5 max-w-6xl mx-auto w-full pb-10">
       <TaskBreadCrumbs project={data.project} task={data} />
-      <DottedSeparator className="my-6" />
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <TaskOverview task={data} />
         <TaskDescription task={data} />
         <TaskComment task={data} />

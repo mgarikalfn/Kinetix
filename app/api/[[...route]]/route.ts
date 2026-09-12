@@ -8,8 +8,8 @@ import projects from "@/features/projects/server/route";
 import tasks from "@/features/tasks/server/route";
 import comments from "@/features/comments/server/route";
 import activityLog from "@/features/activityLogs/server/route";
-import profile from "@/app/api/user/profile/route";
-import passwordRecovery from "@/app/api/user/password-recovery/route";
+import profile from "@/app/api/user/profile/profile-router";
+import passwordRecovery from "@/app/api/user/password-recovery/recovery-router";
 
 const app = new Hono().basePath("/api");
 

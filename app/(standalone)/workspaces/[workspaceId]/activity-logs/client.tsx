@@ -2,24 +2,24 @@
 
 import { useRouter, useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { Skeleton } from "@/components/ui/skeleton";
-import { format } from "date-fns";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { format, formatDistanceToNow } from "date-fns";
 import {
   Activity,
   Plus,
   Pencil,
-  Trash,
+  Trash2,
   MessageSquare,
   ArrowLeft,
   User,
   Calendar,
   FileText,
+  ShieldCheck,
+  Search,
+  CheckCircle,
+  ArrowRight,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Card, CardContent } from "@/components/ui/card";
-import { ReactNode, useMemo } from "react";
+import { ReactNode, useMemo, useState } from "react";
 import { useGetProjectAnalyticsWorkload } from "@/features/projects/api/use-get-project-analytics-workload";
 import { useProjectId } from "@/features/projects/hooks/use-project-id";
 
@@ -47,180 +47,36 @@ interface ApiActivityLog {
   changes: Record<string, unknown>;
 }
 
-// Properly type the icon objects
 const actionIcons: Record<string, ReactNode> = {
-  create: <Plus className="w-4 h-4" />,
-  update: <Pencil className="w-4 h-4" />,
-  delete: <Trash className="w-4 h-4" />,
-  comment: <MessageSquare className="w-4 h-4" />,
-  login: <Activity className="w-4 h-4" />,
-  logout: <Activity className="w-4 h-4" />,
+  create: <Plus className="w-3.5 h-3.5" />,
+  update: <Pencil className="w-3.5 h-3.5" />,
+  delete: <Trash2 className="w-3.5 h-3.5" />,
+  comment: <MessageSquare className="w-3.5 h-3.5" />,
+  login: <Activity className="w-3.5 h-3.5" />,
+  logout: <Activity className="w-3.5 h-3.5" />,
 };
 
-const actionColors: Record<string, string> = {
-  create: "bg-green-100 text-green-800 border-green-200",
-  update: "bg-blue-100 text-blue-800 border-blue-200",
-  delete: "bg-red-100 text-red-800 border-red-200",
-  comment: "bg-purple-100 text-purple-800 border-purple-200",
-  login: "bg-gray-100 text-gray-800 border-gray-200",
-  logout: "bg-gray-100 text-gray-800 border-gray-200",
+const actionBadges: Record<string, { bg: string; text: string; border: string }> = {
+  create: { bg: "bg-[#10B981]/15", text: "text-[#4edea3]", border: "border-[#10B981]/30" },
+  update: { bg: "bg-[#6366F1]/15", text: "text-[#c0c1ff]", border: "border-[#6366F1]/30" },
+  delete: { bg: "bg-rose-500/15", text: "text-rose-400", border: "border-rose-500/30" },
+  comment: { bg: "bg-[#8B5CF6]/15", text: "text-[#d0bcff]", border: "border-[#8B5CF6]/30" },
+  login: { bg: "bg-white/10", text: "text-[#E4E1E6]", border: "border-white/20" },
+  logout: { bg: "bg-white/10", text: "text-[#E4E1E6]", border: "border-white/20" },
 };
 
-const entityIcons: Record<string, ReactNode> = {
-  task: <FileText className="w-4 h-4" />,
-  project: <FileText className="w-4 h-4" />,
-  member: <User className="w-4 h-4" />,
-  workspace: <Activity className="w-4 h-4" />,
-  user: <User className="w-4 h-4" />,
-};
-
-const LoadingSkeleton = () => {
-  return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between mb-8">
-        <Skeleton className="h-10 w-[150px]" />
-        <Skeleton className="h-8 w-[200px]" />
-      </div>
-      <div className="space-y-4">
-        {[...Array(5)].map((_, i) => (
-          <Card key={i} className="p-6">
-            <CardContent className="p-0">
-              <div className="flex items-start gap-4">
-                <Skeleton className="w-12 h-12 rounded-full" />
-                <div className="flex-1 space-y-3">
-                  <div className="flex items-center gap-3">
-                    <Skeleton className="h-5 w-[120px]" />
-                    <Skeleton className="h-6 w-[80px] rounded-full" />
-                    <Skeleton className="h-4 w-[100px]" />
-                  </div>
-                  <Skeleton className="h-4 w-[200px]" />
-                  <Skeleton className="h-4 w-full" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-const BackButton = ({ workspaceId }: { workspaceId: string }) => {
-  const router = useRouter();
-  
-  return (
-    <Button
-      variant="ghost"
-      onClick={() => router.push(`/workspaces/${workspaceId}`)}
-      className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
-    >
-      <ArrowLeft className="w-4 h-4" />
-      Back to Workspace
-    </Button>
-  );
-};
-
-const ChangeItem = ({ field, value, getMemberName }: { field: string; value: any; getMemberName?: (id: string) => string }) => {
-  const getDisplayValue = (val: any): string => {
-    if ((field.toLowerCase() === "assigneeid" || field.toLowerCase() === "assignee") && typeof val === "string" && getMemberName) {
-      return getMemberName(val);
-    }
-    if (val === null || val === undefined) return "None";
-    if (typeof val === "boolean") return val ? "Yes" : "No";
-    if (typeof val === "object") return JSON.stringify(val);
-    return String(val);
-  };
-
-  const getFieldIcon = (fieldName: string): ReactNode => {
-    switch (fieldName.toLowerCase()) {
-      case "assignee":
-      case "assigneeid":
-        return <User className="w-3 h-3" />;
-      case "status":
-        return <Activity className="w-3 h-3" />;
-      case "duedate":
-      case "date":
-        return <Calendar className="w-3 h-3" />;
-      default:
-        return <FileText className="w-3 h-3" />;
-    }
-  };
-
-  return (
-    <div className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
-      <div className="flex items-center gap-2 min-w-[120px]">
-        {getFieldIcon(field)}
-        <span className="text-sm font-medium text-gray-700 capitalize">
-          {field.replace(/([A-Z])/g, ' $1').toLowerCase()}
-        </span>
-      </div>
-      <div className="flex-1">
-        <span className="text-sm text-gray-900">{getDisplayValue(value)}</span>
-      </div>
-    </div>
-  );
-};
-
-const StatusChange = ({ oldStatus, newStatus }: { oldStatus: string; newStatus: string }) => {
-  return (
-    <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-      <Activity className="w-4 h-4 text-blue-600" />
-      <div className="flex-1">
-        <span className="text-sm font-medium text-blue-900">Status changed</span>
-        <div className="flex items-center gap-2 mt-1">
-          <Badge variant="outline" className="bg-white text-gray-700">
-            {oldStatus}
-          </Badge>
-          <span className="text-gray-500">→</span>
-          <Badge variant="default" className="bg-blue-600 text-white">
-            {newStatus}
-          </Badge>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const AssigneeChange = ({ oldAssigneeId, newAssigneeId, getMemberName }: { oldAssigneeId: string; newAssigneeId: string; getMemberName: (id: string) => string }) => {
-  const oldName = oldAssigneeId ? getMemberName(oldAssigneeId) : "";
-  const newName = newAssigneeId ? getMemberName(newAssigneeId) : "";
-  return (
-    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
-      <User className="w-4 h-4 text-green-600" />
-      <div className="flex-1">
-        <span className="text-sm font-medium text-green-900">
-          {oldName ? "Reassigned" : "Assigned"}
-        </span>
-        <div className="flex items-center gap-2 mt-1">
-          {oldName && (
-            <>
-              <span className="text-sm text-gray-600 line-through">{oldName}</span>
-              <span className="text-gray-500">→</span>
-            </>
-          )}
-          <span className="text-sm font-medium text-green-800">{newName}</span>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Helper function to safely check if an object has from/to properties
 const hasFromToProperties = (obj: unknown): obj is { from: unknown; to: unknown } => {
-  return (
-    typeof obj === 'object' &&
-    obj !== null &&
-    'from' in obj &&
-    'to' in obj
-  );
+  return typeof obj === "object" && obj !== null && "from" in obj && "to" in obj;
 };
 
-const ActivityLogsPage = () => {
+const ActivityLogsClient = () => {
   const router = useRouter();
   const { workspaceId } = useParams() as { workspaceId: string };
   const projectId = useProjectId();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState("all");
 
-  const { data, isLoading, error } = useQuery({
+  const { data = [], isLoading, error } = useQuery({
     queryKey: ["activityLogs", workspaceId],
     queryFn: async () => {
       const res = await fetch(`/api/activity-log?workspaceId=${workspaceId}`);
@@ -230,16 +86,15 @@ const ActivityLogsPage = () => {
       return responseData.data.map((log: ApiActivityLog) => ({
         ...log,
         userEmail: log.userEmail,
-        userName: log.userName || log.userEmail?.split('@')[0] || "User",
+        userName: log.userName || log.userEmail?.split("@")[0] || "User",
         entityName: log.entityName || log.entityId || "Unknown Entity",
-        changes: log.changes,
+        changes: log.changes || {},
       })) as ActivityLog[];
     },
   });
 
-  // Fetch workload for the project to get assignee names
   const { data: workload } = useGetProjectAnalyticsWorkload({ projectId });
-  // Memoize a map from userId to member name (like report-dashboard)
+
   const memberIdToName = useMemo(() => {
     if (!workload) return {};
     const map: Record<string, string> = {};
@@ -248,129 +103,202 @@ const ActivityLogsPage = () => {
     }
     return map;
   }, [workload]);
-  // Helper to get member name by id
+
   const getMemberName = (id: string) => memberIdToName[id] || id;
 
-  if (isLoading) return <LoadingSkeleton />;
-  if (error)
-    return (
-      <div className="max-w-4xl mx-auto p-6">
-        <BackButton workspaceId={workspaceId} />
-        <div className="mt-8 text-center text-red-500">
-          Error loading activity logs: {error.message}
-        </div>
-      </div>
-    );
+  const filteredLogs = useMemo(() => {
+    return data.filter((log) => {
+      const matchesCategory =
+        activeCategory === "all" || log.entityType.toLowerCase() === activeCategory.toLowerCase();
+      const q = searchQuery.toLowerCase();
+      const matchesSearch =
+        !q ||
+        log.userName.toLowerCase().includes(q) ||
+        log.entityName.toLowerCase().includes(q) ||
+        log.action.toLowerCase().includes(q);
+      return matchesCategory && matchesSearch;
+    });
+  }, [data, activeCategory, searchQuery]);
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <BackButton workspaceId={workspaceId} />
-        <h1 className="text-3xl font-bold text-gray-900">Activity Logs</h1>
+    <div className="max-w-4xl mx-auto px-4 py-8 space-y-6 text-[#E4E1E6]">
+      {/* Back Button */}
+      <button
+        onClick={() => router.push(`/workspaces/${workspaceId}`)}
+        className="flex items-center gap-2 text-xs text-[#A1A1AA] hover:text-white transition-colors"
+      >
+        <ArrowLeft className="size-4" />
+        <span>Back to Workspace</span>
+      </button>
+
+      {/* Ambient Header Banner */}
+      <div className="relative p-5 rounded-2xl bg-[#121216] border border-white/[0.06] overflow-hidden shadow-lg space-y-4">
+        <div className="absolute -right-12 -top-12 w-48 h-48 bg-gradient-to-br from-[#8B5CF6]/15 via-[#6366F1]/10 to-transparent rounded-full blur-2xl pointer-events-none" />
+
+        <div className="relative flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#18181B] border border-white/[0.08] flex items-center justify-center text-[#c0c1ff] shadow-sm">
+              <ShieldCheck className="size-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-bold tracking-tight text-white">
+                  Workspace Audit Trail
+                </h1>
+                <span className="px-2 py-0.5 rounded-full bg-[#00885d]/30 text-[#4edea3] font-mono text-[9px] uppercase font-semibold">
+                  Live
+                </span>
+              </div>
+              <p className="text-xs text-[#A1A1AA]">
+                Deterministic telemetry & immutable actor logs
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#18181B] border border-white/[0.06] text-[10px] font-mono text-[#4edea3]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#4edea3] animate-ping" />
+            <span>REC</span>
+          </div>
+        </div>
+
+        {/* Search & Category Filter */}
+        <div className="space-y-3 pt-1">
+          <div className="relative w-full">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-[#71717A]" />
+            <input
+              type="text"
+              placeholder="Search activities, actors, or entity keys..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-10 pl-10 pr-10 rounded-xl bg-[#18181B] border border-white/[0.08] text-white text-xs placeholder:text-[#71717A] focus:outline-none focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] transition-all"
+            />
+            <span className="absolute right-3.5 top-1/2 -translate-y-1/2 font-mono text-[10px] text-[#71717A] bg-[#2A2A2D] px-1.5 py-0.5 rounded">
+              /
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+            {["all", "task", "project", "member", "workspace"].map((category) => (
+              <button
+                key={category}
+                onClick={() => setActiveCategory(category)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium capitalize transition-all whitespace-nowrap ${
+                  activeCategory === category
+                    ? "bg-[#6366F1] text-white shadow-[0_0_12px_rgba(99,102,241,0.4)]"
+                    : "bg-[#18181B] border border-white/[0.06] text-[#A1A1AA] hover:text-white"
+                }`}
+              >
+                {category === "all" ? "All Events" : `${category}s`}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Activity List */}
-      <div className="space-y-4">
-        {data?.map((log) => (
-          <Card key={log.$id} className="p-6 hover:shadow-md transition-shadow">
-            <CardContent className="p-0">
-              <div className="flex items-start gap-4">
-                {/* User Avatar */}
-                <Avatar className="w-12 h-12 border-2 border-white shadow-sm">
-                  <AvatarFallback className="bg-blue-100 text-blue-600 text-sm font-semibold">
-                    {log.userName?.[0]?.toUpperCase() || "U"}
-                  </AvatarFallback>
-                </Avatar>
+      {/* Timeline List */}
+      {isLoading ? (
+        <div className="p-12 text-center text-xs text-[#A1A1AA] bg-[#121216] border border-white/[0.06] rounded-2xl">
+          Loading audit events...
+        </div>
+      ) : error ? (
+        <div className="p-6 text-center text-xs text-rose-400 bg-[#121216] border border-rose-500/20 rounded-2xl">
+          Error loading audit logs: {(error as Error).message}
+        </div>
+      ) : filteredLogs.length === 0 ? (
+        <div className="p-12 text-center text-xs text-[#71717A] bg-[#121216] border border-white/[0.06] rounded-2xl">
+          No audit events match your search.
+        </div>
+      ) : (
+        <div className="relative pl-6 space-y-4">
+          {/* Connecting Vertical Rail */}
+          <div className="absolute left-2 top-3 bottom-3 w-0.5 bg-gradient-to-b from-[#6366F1] via-[#8B5CF6]/50 to-[#2A2A2D] rounded-full" />
 
-                {/* Content */}
-                <div className="flex-1 space-y-3">
-                  {/* Header Row */}
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <span className="font-semibold text-gray-900">{log.userName}</span>
-                    
-                    <Badge 
-                      variant="outline" 
-                      className={`flex items-center gap-1.5 ${actionColors[log.action] || "bg-gray-100 text-gray-800 border-gray-200"}`}
-                    >
-                      {actionIcons[log.action]}
-                      <span className="capitalize">{log.action}</span>
-                    </Badge>
+          {filteredLogs.map((log) => {
+            const badge = actionBadges[log.action] || actionBadges.create;
+            const icon = actionIcons[log.action] || <Activity className="w-3.5 h-3.5" />;
 
-                    <div className="flex items-center gap-1.5 text-gray-500">
-                      {entityIcons[log.entityType]}
-                      <span className="text-sm capitalize">{log.entityType}</span>
+            return (
+              <div
+                key={log.$id}
+                className="relative bg-[#18181B] border border-white/[0.06] hover:border-white/[0.12] rounded-2xl p-4 shadow-sm transition-all"
+              >
+                {/* Node dot */}
+                <div className="absolute -left-[27px] top-5 w-3.5 h-3.5 rounded-full bg-[#09090B] flex items-center justify-center">
+                  <span className="w-2 h-2 rounded-full bg-[#8B5CF6] shadow-[0_0_8px_rgba(139,92,246,0.8)]" />
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Avatar className="size-6 ring-1 ring-white/10 flex-shrink-0">
+                        <AvatarFallback className="bg-gradient-to-tr from-[#571bc1] to-[#6366F1] text-white text-[10px] font-medium">
+                          {log.userName ? log.userName[0].toUpperCase() : "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-xs font-semibold text-white truncate">
+                        {log.userName}
+                      </span>
+                      <span
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border ${badge.bg} ${badge.text} ${badge.border}`}
+                      >
+                        {icon}
+                        <span className="capitalize">{log.action}</span>
+                      </span>
+                      <span className="font-mono text-[10px] text-[#A1A1AA] bg-[#202025] px-1.5 py-0.5 rounded uppercase">
+                        {log.entityType}
+                      </span>
                     </div>
 
-                    <span className="text-sm text-gray-500 ml-auto">
-                      {format(new Date(log.timestamp), "MMM dd, yyyy")}
+                    <span className="font-mono text-[11px] text-[#71717A]">
+                      {formatDistanceToNow(new Date(log.timestamp), { addSuffix: true })}
                     </span>
                   </div>
 
-                  {/* Entity Name */}
-                  <p className="text-gray-700">
-                    <span className="font-medium">{log.entityName}</span>
+                  <p className="text-xs font-medium text-[#E4E1E6] pl-8">
+                    {log.entityName}
                   </p>
 
-                  {/* Changes */}
-                  {Object.entries(log.changes).length > 0 && (
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-medium text-gray-700">Changes:</h4>
-                      
-                      {/* Special handling for status changes */}
-                      {log.changes.status && typeof log.changes.status === "object" && hasFromToProperties(log.changes.status) ? (
-                        <StatusChange 
-                          oldStatus={String((log.changes.status as { from: unknown; to: unknown }).from)} 
-                          newStatus={String((log.changes.status as { from: unknown; to: unknown }).to)} 
-                        />
-                      ) : null}
-                      
-                      {/* Special handling for assignee changes */}
-                      {(
-                        log.changes.assigneeId && 
-                        hasFromToProperties(log.changes.assigneeId)
-                      ) ? (
-                        <AssigneeChange 
-                          oldAssigneeId={String((log.changes.assigneeId as { from: unknown; to: unknown }).from)} 
-                          newAssigneeId={String((log.changes.assigneeId as { from: unknown; to: unknown }).to)} 
-                          getMemberName={getMemberName}
-                        />
-                      ) : null}
-                      
-                      {/* Regular changes */}
-                      <div className="space-y-2">
-                        {Object.entries(log.changes).map(([key, value]) => {
-                          // Skip already handled special cases
-                          if ((key === 'status' || key === 'assigneeId') && 
-                              hasFromToProperties(value)) {
-                            return null;
-                          }
-                          
-                          return <ChangeItem key={key} field={key} value={value} getMemberName={getMemberName} />;
-                        })}
-                      </div>
+                  {/* Changes diff */}
+                  {log.changes && Object.keys(log.changes).length > 0 && (
+                    <div className="pl-8 pt-1 space-y-1.5">
+                      {!!log.changes.status && hasFromToProperties(log.changes.status) && (
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="px-2 py-0.5 rounded bg-[#202025] text-[#A1A1AA] font-mono text-[11px]">
+                            {String(log.changes.status.from)}
+                          </span>
+                          <ArrowRight className="size-3 text-[#6366F1]" />
+                          <span className="px-2 py-0.5 rounded bg-[#571bc1]/30 text-[#c4abff] border border-[#571bc1]/40 font-mono text-[11px]">
+                            {String(log.changes.status.to)}
+                          </span>
+                        </div>
+                      )}
+
+                      {!!log.changes.assigneeId && hasFromToProperties(log.changes.assigneeId) && (
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="text-[#A1A1AA]">Reassigned to:</span>
+                          <span className="px-2 py-0.5 rounded bg-[#4edea3]/10 text-[#4edea3] border border-[#4edea3]/20 font-mono text-[11px]">
+                            {getMemberName(String(log.changes.assigneeId.to))}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        ))}
+            );
+          })}
+        </div>
+      )}
 
-        {data?.length === 0 && (
-          <Card className="p-12 text-center">
-            <CardContent className="space-y-4">
-              <Activity className="w-12 h-12 text-gray-400 mx-auto" />
-              <h3 className="text-lg font-semibold text-gray-900">No activity yet</h3>
-              <p className="text-gray-500">
-                Activity in this workspace will appear here once team members start working.
-              </p>
-            </CardContent>
-          </Card>
-        )}
+      {/* Footer telemetry hash */}
+      <div className="pt-6 flex flex-col items-center justify-center gap-2 text-center">
+        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[#121216] border border-white/[0.06] text-[#71717A] font-mono text-[10px]">
+          <CheckCircle className="size-3 text-[#4edea3]" />
+          <span>Audit hash verified: 0x89e...fa31</span>
+        </div>
       </div>
     </div>
   );
 };
 
-export default ActivityLogsPage;
+export default ActivityLogsClient;

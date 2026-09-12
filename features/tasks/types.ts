@@ -30,6 +30,12 @@ export type Task = Models.Document & {
     dueDate:string;
     workspaceId:string;
     description?:string;
+    priority?: TaskPriority;
+    type?: TaskType;
+    startedAt?: string;
+    completedAt?: string;
+    storyPoint?: number;
+    creatorId?: string;
 
      project?: Project
     assignee?: {

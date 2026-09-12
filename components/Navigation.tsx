@@ -56,44 +56,39 @@ const NavigationItem = ({ item, workspaceId, pathname }: NavigationItemProps) =>
   const fullHref = `/workspaces/${workspaceId}${item.href}`;
   const isActive = pathname === fullHref;
   const Icon = isActive ? item.activeIcon : item.icon;
-  const {data:user} = useCurrent();
+  const { data: user } = useCurrent();
+
   const linkContent = (
-    <div className={cn(
-      "flex items-center gap-2.5 p-2.5 rounded-md font-medium hover:text-primary transition text-neutral-500",
-      isActive && "bg-white shadow-sm hover:opacity-100 text-primary"
-    )}>
-      <Icon className="size-5 text-neutral-500" />
-      {item.label}
+    <div
+      className={cn(
+        "flex items-center gap-2.5 px-3 py-2 rounded-lg text-body-md font-medium transition-all text-[#A1A1AA] hover:text-[#F4F4F5] hover:bg-white/[0.04]",
+        isActive && "bg-[#1F1F22] text-white shadow-sm border-l-2 border-[#6366F1]"
+      )}
+    >
+      <Icon className={cn("size-4 text-[#A1A1AA] transition-colors", isActive && "text-[#c0c1ff]")} />
+      <span>{item.label}</span>
       {item.requiredRole && (
-        <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded ml-auto">
+        <span className="font-label-micro text-[9px] uppercase px-1.5 py-0.5 rounded bg-[#571bc1]/30 text-[#c4abff] border border-[#571bc1]/40 ml-auto">
           Admin
         </span>
       )}
     </div>
   );
 
-  // If route requires specific role, wrap with RoleGuard
   if (item.requiredRole) {
     return (
-      <RoleGuard 
-        role={item.requiredRole} 
+      <RoleGuard
+        role={item.requiredRole}
         workspaceId={workspaceId}
         userId={user?.$id}
         fallback={null}
       >
-        <Link href={fullHref}>
-          {linkContent}
-        </Link>
+        <Link href={fullHref}>{linkContent}</Link>
       </RoleGuard>
     );
   }
 
-  // Public route - no role restriction
-  return (
-    <Link href={fullHref}>
-      {linkContent}
-    </Link>
-  );
+  return <Link href={fullHref}>{linkContent}</Link>;
 };
 
 export const Navigation = () => {
@@ -101,7 +96,8 @@ export const Navigation = () => {
   const pathname = usePathname();
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col gap-y-1">
+      <p className="font-label-micro text-neutral-400 px-3 py-1 mb-1">Menu</p>
       {routes.map((item) => (
         <NavigationItem
           key={item.href}

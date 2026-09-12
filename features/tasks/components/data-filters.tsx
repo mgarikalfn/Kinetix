@@ -58,26 +58,26 @@ export const DataFilters = ({ hideProjectFilter }: DataFiltersProps) => {
   if (isLoading) return null;
 
   return (
-    <div className="flex flex-col lg:flex-row gap-2">
+    <div className="flex flex-wrap items-center gap-2.5">
       <Select
         defaultValue={status ?? undefined}
         onValueChange={(value) => onStatusChange(value)}
       >
-        <SelectTrigger className="w-full lg:w-auto h-8">
-          <div className="flex items-center pr-2">
-            <ListCheckIcon className="size-4 mr-2" />
-            <SelectValue placeholder="all statuses" />
+        <SelectTrigger className="w-full sm:w-auto h-9 px-3 rounded-xl bg-[#18181B] border border-white/[0.08] hover:border-white/[0.16] text-[#F4F4F5] text-xs transition-colors">
+          <div className="flex items-center gap-2">
+            <ListCheckIcon className="size-3.5 text-[#6366F1]" />
+            <SelectValue placeholder="Status: All" />
           </div>
         </SelectTrigger>
 
-        <SelectContent>
-          <SelectItem value="all">All statuses</SelectItem>
-          <SelectSeparator />
-          <SelectItem value={TaskStatus.BACKLOG}>BackLog</SelectItem>
-          <SelectItem value={TaskStatus.DONE}>Done</SelectItem>
-          <SelectItem value={TaskStatus.IN_PROGRESS}>In Progress</SelectItem>
-          <SelectItem value={TaskStatus.IN_REVIEW}>In Review</SelectItem>
-          <SelectItem value={TaskStatus.TODO}>To do</SelectItem>
+        <SelectContent className="bg-[#1F1F22] border border-white/[0.1] text-[#F4F4F5] rounded-xl shadow-2xl">
+          <SelectItem value="all" className="hover:bg-white/[0.06] rounded-lg">All Statuses</SelectItem>
+          <SelectSeparator className="bg-white/[0.08]" />
+          <SelectItem value={TaskStatus.BACKLOG} className="hover:bg-white/[0.06] rounded-lg">Backlog</SelectItem>
+          <SelectItem value={TaskStatus.TODO} className="hover:bg-white/[0.06] rounded-lg">Todo</SelectItem>
+          <SelectItem value={TaskStatus.IN_PROGRESS} className="hover:bg-white/[0.06] rounded-lg">In Progress</SelectItem>
+          <SelectItem value={TaskStatus.IN_REVIEW} className="hover:bg-white/[0.06] rounded-lg">In Review</SelectItem>
+          <SelectItem value={TaskStatus.DONE} className="hover:bg-white/[0.06] rounded-lg">Done</SelectItem>
         </SelectContent>
       </Select>
 
@@ -85,49 +85,51 @@ export const DataFilters = ({ hideProjectFilter }: DataFiltersProps) => {
         defaultValue={assigneeId ?? undefined}
         onValueChange={(value) => onAssigneeChange(value)}
       >
-        <SelectTrigger className="w-full lg:w-auto h-8">
-          <div className="flex items-center pr-2">
-            <UserIcon className="size-4 mr-2" />
-            <SelectValue placeholder="all assignees" />
+        <SelectTrigger className="w-full sm:w-auto h-9 px-3 rounded-xl bg-[#18181B] border border-white/[0.08] hover:border-white/[0.16] text-[#F4F4F5] text-xs transition-colors">
+          <div className="flex items-center gap-2">
+            <UserIcon className="size-3.5 text-[#8B5CF6]" />
+            <SelectValue placeholder="Assignee: All" />
           </div>
         </SelectTrigger>
 
-        <SelectContent>
-          <SelectItem value="all">All assignees</SelectItem>
-          <SelectSeparator />
+        <SelectContent className="bg-[#1F1F22] border border-white/[0.1] text-[#F4F4F5] rounded-xl shadow-2xl">
+          <SelectItem value="all" className="hover:bg-white/[0.06] rounded-lg">All Assignees</SelectItem>
+          <SelectSeparator className="bg-white/[0.08]" />
           {memberOptions?.map((member) => (
-            <SelectItem key={member.value} value={member.value}>
+            <SelectItem key={member.value} value={member.value} className="hover:bg-white/[0.06] rounded-lg">
               {member.label}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
+
       {!hideProjectFilter && (
         <Select
           defaultValue={projectId ?? undefined}
           onValueChange={(value) => onProjectChange(value)}
         >
-          <SelectTrigger className="w-full lg:w-auto h-8">
-            <div className="flex items-center pr-2">
-              <FolderIcon className="size-4 mr-2" />
-              <SelectValue placeholder="all projects" />
+          <SelectTrigger className="w-full sm:w-auto h-9 px-3 rounded-xl bg-[#18181B] border border-white/[0.08] hover:border-white/[0.16] text-[#F4F4F5] text-xs transition-colors">
+            <div className="flex items-center gap-2">
+              <FolderIcon className="size-3.5 text-[#4edea3]" />
+              <SelectValue placeholder="Project: All" />
             </div>
           </SelectTrigger>
 
-          <SelectContent>
-            <SelectItem value="all">All projects</SelectItem>
-            <SelectSeparator />
+          <SelectContent className="bg-[#1F1F22] border border-white/[0.1] text-[#F4F4F5] rounded-xl shadow-2xl">
+            <SelectItem value="all" className="hover:bg-white/[0.06] rounded-lg">All Projects</SelectItem>
+            <SelectSeparator className="bg-white/[0.08]" />
             {projectOptions?.map((project) => (
-              <SelectItem key={project.value} value={project.value}>
+              <SelectItem key={project.value} value={project.value} className="hover:bg-white/[0.06] rounded-lg">
                 {project.label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       )}
+
       <DatePicker
-        placeholder="Due date"
-        className="h-8 w-full lg:w-auto"
+        placeholder="Filter Due Date"
+        className="h-9 w-full sm:w-auto rounded-xl bg-[#18181B] border border-white/[0.08] hover:border-white/[0.16] text-[#F4F4F5] text-xs"
         value={dueDate ? new Date(dueDate) : undefined}
         onChange={(date) => {
           setFilters({ dueDate: date ? date.toISOString() : null });

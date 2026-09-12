@@ -6,4 +6,6 @@ export type AppComment = Models.Document & {
     content:string;
     workspaceId:string;
     taskId:string;
+    authorName?: string;
+    authorEmail?: string;
 }

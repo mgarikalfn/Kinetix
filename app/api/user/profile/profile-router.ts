@@ -58,10 +58,11 @@ const app = new Hono()
             name: updatedUser.name,
           }
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : "Failed to update name";
         console.error("Error updating name:", error);
         return c.json({ 
-          error: error.message || "Failed to update name" 
+          error: msg 
         }, 500);
       }
     }
@@ -103,10 +104,11 @@ const app = new Hono()
             emailVerification: updatedUser.emailVerification,
           }
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : "Failed to update email";
         console.error("Error updating email:", error);
         return c.json({ 
-          error: error.message || "Failed to update email" 
+          error: msg 
         }, 500);
       }
     }
@@ -147,10 +149,11 @@ const app = new Hono()
         return c.json({
           message: "Password updated successfully",
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : "Failed to update password";
         console.error("Error updating password:", error);
         return c.json({ 
-          error: error.message || "Failed to update password" 
+          error: msg 
         }, 500);
       }
     }
@@ -180,10 +183,11 @@ const app = new Hono()
             prefs: updatedUser.prefs,
           }
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : "Failed to update preferences";
         console.error("Error updating preferences:", error);
         return c.json({ 
-          error: error.message || "Failed to update preferences" 
+          error: msg 
         }, 500);
       }
     }

@@ -1,7 +1,5 @@
-import { Button } from "@/components/ui/button";
 import { Task } from "../types";
-import { PencilIcon, XIcon } from "lucide-react";
-import { DottedSeparator } from "@/components/ui/dotted-separator";
+import { Pencil, X, FileText, Check } from "lucide-react";
 import { useUpdateTask } from "../api/use-update-task";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,56 +10,78 @@ interface TaskDescriptionProps {
 
 export const TaskDescription = ({ task }: TaskDescriptionProps) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [value, setValue] = useState(task.description);
+  const [value, setValue] = useState(task.description || "");
   const { mutate, isPending } = useUpdateTask();
 
   const handleSave = () => {
-    mutate({
-      json: { description: value },
-      param: { taskId: task.$id },
-    });
+    mutate(
+      {
+        json: { description: value },
+        param: { taskId: task.$id },
+      },
+      {
+        onSuccess: () => {
+          setIsEditing(false);
+        },
+      }
+    );
   };
 
   return (
-    <div className="p-4 border rounded-lg">
+    <div className="bg-[#121216] border border-white/[0.06] rounded-2xl p-5 space-y-4 shadow-md">
       <div className="flex items-center justify-between">
-        <p className="text-lg font-semibold">Overview</p>
-        <Button
+        <div className="flex items-center gap-2">
+          <FileText className="size-4 text-[#6366F1]" />
+          <h3 className="font-headline-md text-sm font-medium text-white">
+            Specification & Scope
+          </h3>
+        </div>
+
+        <button
           onClick={() => setIsEditing((prev) => !prev)}
-          size="sm"
-          variant="secondary"
+          className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-[#E4E1E6] text-xs font-medium transition-colors"
         >
           {isEditing ? (
-            <XIcon className="size-4 mr-2" />
+            <>
+              <X className="size-3.5" />
+              <span>Cancel</span>
+            </>
           ) : (
-            <PencilIcon className="size-4 mr-2" />
+            <>
+              <Pencil className="size-3.5" />
+              <span>Edit Spec</span>
+            </>
           )}
-          {isEditing ? "Cancel" : "Edit"}
-        </Button>
+        </button>
       </div>
-      <DottedSeparator className="my-4" />
+
       {isEditing ? (
-        <div className="flex flex-col gap-y-4">
+        <div className="flex flex-col gap-y-3">
           <Textarea
-            placeholder="Add a description ..."
+            placeholder="Write task specifications, acceptance criteria, or technical notes..."
             value={value}
-            rows={4}
+            rows={5}
             onChange={(e) => setValue(e.target.value)}
             disabled={isPending}
+            className="w-full bg-[#18181B] border border-white/[0.1] rounded-xl text-[#F4F4F5] placeholder:text-[#71717A] text-sm focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] resize-y"
           />
-          <Button
-            size="sm"
-            className="w-fit ml-auto"
+          <button
             onClick={handleSave}
             disabled={isPending}
+            className="flex items-center gap-1.5 h-9 px-4 rounded-xl bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white text-xs font-medium shadow-[0_0_12px_rgba(99,102,241,0.35)] hover:opacity-90 active:scale-95 transition-all ml-auto disabled:opacity-50"
           >
-            {isPending ? "Saving..." : "Save Changes"}
-          </Button>
+            <Check className="size-3.5" />
+            <span>{isPending ? "Saving..." : "Save Changes"}</span>
+          </button>
         </div>
       ) : (
-        <div>
-          {task.description || (
-            <span className="text-muted-foreground">No description set</span>
+        <div className="p-4 rounded-xl bg-[#18181B] border border-white/[0.06] text-body-md text-[#A1A1AA] leading-relaxed whitespace-pre-wrap font-sans">
+          {task.description ? (
+            task.description
+          ) : (
+            <span className="text-[#71717A] italic text-xs">
+              No technical specification provided yet. Click "Edit Spec" to add requirements.
+            </span>
           )}
         </div>
       )}

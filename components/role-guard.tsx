@@ -8,7 +8,7 @@ import { Loader2 } from "lucide-react";
 interface RoleGuardProps {
   role: MemberRole | MemberRole[];
   workspaceId?: string;
-  userId?:string;
+  userId?: string;
   children: ReactNode;
   fallback?: ReactNode;
 }
@@ -20,12 +20,16 @@ export function RoleGuard({
   children,
   fallback = null,
 }: RoleGuardProps) {
-   
+  // Must call hook unconditionally — pass empty strings when ids are missing;
+  // the hook itself handles missing/empty ids gracefully.
+  const { role: userRole, isLoading } = useUserRole({
+    workspaceId: workspaceId ?? "",
+    userId: userId ?? "",
+  });
+
   if (!workspaceId || !userId) {
     return <>{fallback}</>;
   }
-
-  const { role: userRole, isLoading } = useUserRole({ workspaceId, userId });
 
   if (isLoading) {
     return (

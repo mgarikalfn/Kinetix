@@ -29,11 +29,12 @@ const app = new Hono()
           success: true,
           message: "Password recovery email sent successfully",
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : "Failed to send recovery email";
         console.error("Error initiating password recovery:", error);
         return c.json({ 
           success: false,
-          error: error.message || "Failed to send recovery email" 
+          error: msg 
         }, 500);
       }
     }
@@ -61,11 +62,12 @@ const app = new Hono()
           success: true,
           message: "Password reset successfully",
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : "Failed to reset password";
         console.error("Error completing password recovery:", error);
         return c.json({ 
           success: false,
-          error: error.message || "Failed to reset password" 
+          error: msg 
         }, 500);
       }
     }
@@ -109,11 +111,12 @@ const app = new Hono()
           success: true,
           message: "Password reset successfully",
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : "Failed to reset password";
         console.error("Error completing password recovery:", error);
         return c.json({ 
           success: false,
-          error: error.message || "Failed to reset password" 
+          error: msg 
         }, 500);
       }
     }

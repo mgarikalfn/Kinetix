@@ -83,8 +83,9 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
       }
 
       window.location.reload(); // Refresh to show new name
-    } catch (error: any) {
-      nameForm.setError("name", { message: error.message });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Failed to update name";
+      nameForm.setError("name", { message: msg });
     } finally {
       setIsLoading(false);
     }
@@ -106,8 +107,9 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
 
       alert("Email updated! Please check your email for verification.");
       onClose();
-    } catch (error: any) {
-      emailForm.setError("root", { message: error.message });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Failed to update email";
+      emailForm.setError("root", { message: msg });
     } finally {
       setIsLoading(false);
     }
@@ -130,8 +132,9 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
       alert("Password updated successfully!");
       passwordForm.reset();
       setActiveTab("name");
-    } catch (error: any) {
-      passwordForm.setError("root", { message: error.message });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Failed to update password";
+      passwordForm.setError("root", { message: msg });
     } finally {
       setIsLoading(false);
     }

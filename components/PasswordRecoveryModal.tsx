@@ -63,8 +63,9 @@ export function PasswordRecoveryModal({ isOpen, onClose, userEmail }: PasswordRe
         setIsSuccess(false);
         reset();
       }, 3000);
-    } catch (error: any) {
-      setError("root", { message: error.message });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Failed to send recovery email";
+      setError("root", { message: msg });
     } finally {
       setIsLoading(false);
     }
@@ -96,7 +97,7 @@ export function PasswordRecoveryModal({ isOpen, onClose, userEmail }: PasswordRe
           <div className="text-center py-6">
             <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
             <p className="text-sm text-gray-600">
-              We've sent a password reset link to your email address.
+              We&apos;ve sent a password reset link to your email address.
               Please check your inbox and follow the instructions.
             </p>
           </div>

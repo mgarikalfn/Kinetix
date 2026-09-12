@@ -1,10 +1,8 @@
 "use client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWorkspaceId } from "../hooks/use-workspace-id";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowLeftIcon, MoreVerticalIcon } from "lucide-react";
-import { DottedSeparator } from "@/components/ui/dotted-separator";
+import { ArrowLeft, MoreVerticalIcon, Users, ShieldCheck, UserCircle } from "lucide-react";
 import { useGetMembers } from "@/features/members/api/use-get-members";
 import { Fragment } from "react";
 import { MemberAvatar } from "@/features/members/components/member-avatar";
@@ -14,6 +12,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useDeleteMember } from "@/features/members/api/use-delete-member";
 import { useUpdateMember } from "@/features/members/api/use-update-member";
@@ -26,9 +25,6 @@ import { PageError } from "@/components/page-error";
 export const MembersList = () => {
   const workspaceId = useWorkspaceId();
   const { data: user } = useCurrent();
-  if (!user) {
-    return <PageError message="user not found" />;
-  }
   const [ConfirmDialog, confirm] = useConfirm(
     "Remove member",
     "This member will be removed from the workspace",
@@ -42,6 +38,10 @@ export const MembersList = () => {
 
   const { mutate: updateMember, isPending: isUpdatingMember } =
     useUpdateMember();
+
+  if (!user) {
+    return <PageError message="user not found" />;
+  }
 
   const handleUpdateMember = (memberId: string, role: MemberRole) => {
     updateMember({
@@ -63,80 +63,150 @@ export const MembersList = () => {
       }
     );
   };
+
+  const total = data?.documents.length ?? 0;
+
   return (
-    <Card className="w-full h-full border-none shadow-none">
+    <div className="w-full space-y-5">
       <ConfirmDialog />
-      <CardHeader className="flex flex-row items-center gap-x-4 p-7 space-y-0">
-        <Button variant="secondary" size="sm" asChild>
+
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <Button
+          variant="ghost"
+          size="sm"
+          asChild
+          className="text-[#A1A1AA] hover:text-white hover:bg-white/[0.04] rounded-lg"
+        >
           <Link href={`/workspaces/${workspaceId}`}>
-            <ArrowLeftIcon className="size-4 mr-2" />
+            <ArrowLeft className="size-4 mr-1.5" />
             Back
           </Link>
         </Button>
-        <CardTitle className="text-xl font-bold">Members list</CardTitle>
-      </CardHeader>
-
-      <div className="px-7">
-        <DottedSeparator />
       </div>
 
-      <CardContent className="p-7">
+      {/* Title card */}
+      <div className="relative p-5 rounded-2xl bg-[#121216] border border-white/[0.06] overflow-hidden shadow-lg">
+        <div className="absolute -right-10 -top-10 w-40 h-40 bg-gradient-to-br from-[#6366F1]/15 via-[#8B5CF6]/10 to-transparent rounded-full blur-2xl pointer-events-none" />
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#18181B] border border-white/[0.08] flex items-center justify-center text-[#c0c1ff]">
+              <Users className="size-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-bold tracking-tight text-white">Team Members</h1>
+                <span className="px-2 py-0.5 rounded-full bg-[#202025] text-[#A1A1AA] font-mono text-[10px]">
+                  {total}
+                </span>
+              </div>
+              <p className="text-xs text-[#A1A1AA]">Manage access, roles & permissions</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Members list */}
+      <div className="rounded-2xl bg-[#121216] border border-white/[0.06] overflow-hidden shadow-md">
+        {data?.documents.length === 0 && (
+          <div className="py-16 flex flex-col items-center justify-center gap-3 text-center">
+            <UserCircle className="size-10 text-[#3F3F46]" />
+            <p className="text-sm text-[#71717A]">No members in this workspace yet.</p>
+          </div>
+        )}
+
         {data?.documents.map((member, index) => (
           <Fragment key={member.$id}>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3 px-5 py-4 hover:bg-white/[0.02] transition-colors">
+              {/* Avatar */}
               <MemberAvatar
-                className="size-10"
-                fallbackClassName="text-lg"
+                className="size-10 rounded-full ring-1 ring-white/10 flex-shrink-0"
+                fallbackClassName="text-sm bg-gradient-to-tr from-[#571bc1] to-[#6366F1] text-white"
                 name={member.name}
               />
-              <div className="flex flex-col">
-                <p className="text-sm font-medium">{member.name}</p>
-                <p className="text-sm text-muted-foreground">{member.email}</p>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-semibold text-white truncate">{member.name}</p>
+                  {member.role === MemberRole.ADMIN && (
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#571bc1]/30 text-[#c4abff] border border-[#571bc1]/40 font-mono text-[9px] uppercase font-semibold flex-shrink-0">
+                      <ShieldCheck className="size-2.5" />
+                      Admin
+                    </span>
+                  )}
+                  {member.role === MemberRole.MEMBER && (
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#202025] text-[#A1A1AA] border border-white/[0.06] font-mono text-[9px] uppercase font-semibold flex-shrink-0">
+                      Member
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-[#71717A] font-mono truncate">{member.email}</p>
               </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button className="ml-auto" variant="secondary" size="icon">
-                    <MoreVerticalIcon className="size-4 text-muted-foreground" />
-                  </Button>
-                </DropdownMenuTrigger>
 
-                <DropdownMenuContent side="bottom" align="end">
-                  <DropdownMenuItem
-                    className="font-medium"
-                    onClick={() =>
-                      handleUpdateMember(member.$id, MemberRole.ADMIN)
-                    }
-                    disabled={isUpdatingMember}
-                  >
-                    Set as Administrator
-                  </DropdownMenuItem>
+              {/* Actions dropdown (admin only) */}
+              <RoleGuard
+                role={[MemberRole.ADMIN]}
+                workspaceId={workspaceId}
+                userId={user.$id}
+                fallback={null}
+              >
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      className="w-8 h-8 rounded-lg bg-transparent hover:bg-white/[0.06] border border-transparent hover:border-white/[0.08] text-[#A1A1AA] hover:text-white transition-all flex-shrink-0"
+                      variant="ghost"
+                      size="icon"
+                    >
+                      <MoreVerticalIcon className="size-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
 
-                  <DropdownMenuItem
-                    className="font-medium"
-                    onClick={() =>
-                      handleUpdateMember(member.$id, MemberRole.MEMBER)
-                    }
-                    disabled={isUpdatingMember}
+                  <DropdownMenuContent
+                    side="bottom"
+                    align="end"
+                    className="bg-[#1F1F22] border border-white/[0.08] rounded-xl shadow-xl min-w-[180px]"
                   >
-                    Set as Member
-                  </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="text-xs text-[#E4E1E6] hover:bg-white/[0.06] rounded-lg cursor-pointer"
+                      onClick={() => handleUpdateMember(member.$id, MemberRole.ADMIN)}
+                      disabled={isUpdatingMember}
+                    >
+                      <ShieldCheck className="size-3.5 mr-2 text-[#c4abff]" />
+                      Set as Administrator
+                    </DropdownMenuItem>
 
-                  <DropdownMenuItem
-                    className="font-medium text-amber-700"
-                    onClick={() => handleDeleteMember(member.$id)}
-                    disabled={isDeletingMember}
-                  >
-                    Remove {member.name}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    <DropdownMenuItem
+                      className="text-xs text-[#E4E1E6] hover:bg-white/[0.06] rounded-lg cursor-pointer"
+                      onClick={() => handleUpdateMember(member.$id, MemberRole.MEMBER)}
+                      disabled={isUpdatingMember}
+                    >
+                      <UserCircle className="size-3.5 mr-2 text-[#A1A1AA]" />
+                      Set as Member
+                    </DropdownMenuItem>
+
+                    <DropdownMenuSeparator className="bg-white/[0.06]" />
+
+                    <DropdownMenuItem
+                      className="text-xs text-rose-400 hover:bg-rose-500/10 rounded-lg cursor-pointer"
+                      onClick={() => handleDeleteMember(member.$id)}
+                      disabled={isDeletingMember}
+                    >
+                      Remove {member.name}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </RoleGuard>
             </div>
-            {index < data.documents.length - 1 && (
-              <Separator className="my-2.5" />
+
+            {index < (data?.documents.length ?? 0) - 1 && (
+              <div className="mx-5">
+                <Separator className="bg-white/[0.04]" />
+              </div>
             )}
           </Fragment>
         ))}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };

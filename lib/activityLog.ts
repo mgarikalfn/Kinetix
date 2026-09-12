@@ -151,11 +151,16 @@ export async function getActivityLogs(filter?: {
 
         return {
           ...doc,
+          userId: doc.userId as string,
+          timestamp: doc.timestamp as string,
+          entityType: doc.entityType as string,
+          entityId: doc.entityId as string,
+          action: doc.action as string,
           userEmail: user.email,
           userName: user.name || user.email,
           entityName,
           changes: JSON.parse(doc.changes as string)
-        } as EnrichedActivityLog;
+        } as unknown as EnrichedActivityLog;
 
       } catch (error) {
         console.error("Error enriching log data:", error);
@@ -164,11 +169,16 @@ export async function getActivityLogs(filter?: {
         
         return {
           ...doc,
+          userId: doc.userId as string,
+          timestamp: doc.timestamp as string,
+          entityType: doc.entityType as string,
+          entityId: doc.entityId as string,
+          action: doc.action as string,
           userEmail: "unknown@example.com",
           userName: "Deleted User",
           entityName,
           changes: JSON.parse(doc.changes as string)
-        } as EnrichedActivityLog;
+        } as unknown as EnrichedActivityLog;
       }
     }));
   } catch (error) {

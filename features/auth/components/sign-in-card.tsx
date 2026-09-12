@@ -1,29 +1,20 @@
-"use client"
+"use client";
 
 import { z } from "zod";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { signUpWithGithub, signUpWithGoogle } from "@/lib/oauth";
-import { DottedSeparator } from "@/components/ui/dotted-separator";
 import { Input } from "@/components/ui/input";
-
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import Link from "next/link";
- 
-import {loginSchema} from "../schemas"
+import { loginSchema } from "../schemas";
 import { useLogin } from "../api/use-login";
 
-
 export const SignInCard = () => {
- const {mutate , isPending} = useLogin();
-
-
+  const { mutate, isPending } = useLogin();
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -33,97 +24,104 @@ export const SignInCard = () => {
     },
   });
 
-  const onSubmit = (values:z.infer<typeof loginSchema>) => {
-   mutate({ json: values })
-}
-
+  const onSubmit = (values: z.infer<typeof loginSchema>) => {
+    mutate({ json: values });
+  };
 
   return (
-    <Card className="w-full h-full md:w-[487px] border-none shadow-none">
-      <CardHeader className="flex items-center justify-center text-center p-7">
-        <CardTitle className="text-2xl">Welcome back</CardTitle>
-      </CardHeader>
-      <div className="px-7">
-        <DottedSeparator />
+    <div className="w-full max-w-[440px] bg-[#121216] border border-white/[0.08] rounded-2xl shadow-2xl p-7 space-y-6">
+      <div className="text-center space-y-1">
+        <h2 className="text-2xl font-bold tracking-tight text-white">Welcome Back</h2>
+        <p className="text-xs text-[#A1A1AA]">Sign in to access your workspace telemetry</p>
       </div>
-      <CardContent className="p-7">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              name="email"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
-                    <FormControl>
+
+      <div className="h-px bg-white/[0.08] w-full" />
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            name="email"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
                   <Input
                     {...field}
-                    placeholder="Enter email address"
-                    disabled={false}
+                    placeholder="Enter work email"
+                    disabled={isPending}
+                    className="h-10 bg-[#18181B] border border-white/[0.1] text-white placeholder:text-[#71717A] rounded-xl focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1]"
                   />
-                  </FormControl>
-                  <FormMessage/>
-                </FormItem>
-              )}
-            />
-            <FormField
-              name="password"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
+                </FormControl>
+                <FormMessage className="text-xs text-rose-400" />
+              </FormItem>
+            )}
+          />
+          <FormField
+            name="password"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
                   <Input
                     type="password"
                     required
                     {...field}
                     placeholder="Enter password"
-                    disabled={false}
+                    disabled={isPending}
                     min={8}
                     max={256}
+                    className="h-10 bg-[#18181B] border border-white/[0.1] text-white placeholder:text-[#71717A] rounded-xl focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1]"
                   />
-                </FormItem>
-              )}
-            />
-            <Button disabled={isPending} size="lg" className="w-full">
-              Login
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-      <div className="px-7">
-        <DottedSeparator />
+                </FormControl>
+                <FormMessage className="text-xs text-rose-400" />
+              </FormItem>
+            )}
+          />
+          <button
+            type="submit"
+            disabled={isPending}
+            className="w-full h-10 rounded-xl bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white text-xs font-semibold shadow-[0_0_15px_rgba(99,102,241,0.35)] hover:opacity-90 active:scale-95 transition-all disabled:opacity-50"
+          >
+            {isPending ? "Authenticating..." : "Sign In"}
+          </button>
+        </form>
+      </Form>
+
+      <div className="flex items-center gap-3">
+        <div className="h-px bg-white/[0.08] flex-1" />
+        <span className="text-[11px] font-mono text-[#71717A] uppercase">or continue with</span>
+        <div className="h-px bg-white/[0.08] flex-1" />
       </div>
-      <CardContent className="p-7 flex flex-col gap-y-4">
-        <Button
-         onClick={() => signUpWithGoogle()}
+
+      <div className="flex flex-col gap-2.5">
+        <button
+          type="button"
+          onClick={() => signUpWithGoogle()}
           disabled={isPending}
-          variant="secondary"
-          size="lg"
-          className="w-full"
+          className="w-full h-10 rounded-xl bg-[#18181B] hover:bg-[#1F1F22] border border-white/[0.08] hover:border-white/[0.16] flex items-center justify-center gap-2.5 text-xs font-medium text-white transition-all shadow-sm disabled:opacity-50"
         >
-          <FcGoogle className="mr-2 size-5" />
-          Login with Google
-        </Button>
-        <Button
+          <FcGoogle className="size-4" />
+          <span>Continue with Google</span>
+        </button>
+        <button
+          type="button"
           onClick={() => signUpWithGithub()}
           disabled={isPending}
-          variant="secondary"
-          size="lg"
-          className="w-full"
+          className="w-full h-10 rounded-xl bg-[#18181B] hover:bg-[#1F1F22] border border-white/[0.08] hover:border-white/[0.16] flex items-center justify-center gap-2.5 text-xs font-medium text-white transition-all shadow-sm disabled:opacity-50"
         >
-          <FaGithub className="mr-2 size-5" />
-          Login with GitHub
-        </Button>
-      </CardContent>
-      <div className="px-7">
-              <DottedSeparator/>
+          <FaGithub className="size-4" />
+          <span>Continue with GitHub</span>
+        </button>
       </div>
-      <CardContent className="p-7 flex items-center justify-center">
-        <p>
-            Don&apos;t have an account?
-            <Link href="/sign-up">
-            <span className="text-blue-700">&nbsp;Sign Up</span>
-            </Link>
-        </p>
-      </CardContent>
-    </Card>
+
+      <div className="h-px bg-white/[0.08] w-full" />
+
+      <div className="text-center text-xs text-[#A1A1AA]">
+        Don&apos;t have an account?{" "}
+        <Link href="/sign-up" className="text-[#c0c1ff] hover:underline font-medium">
+          Sign Up
+        </Link>
+      </div>
+    </div>
   );
 };

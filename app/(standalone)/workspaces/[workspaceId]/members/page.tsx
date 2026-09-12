@@ -7,12 +7,11 @@ const WorkspaceIdMembersPage = async () => {
     const user = await getCurrent();
     if(!user) redirect("/sign-in");
 
-
     return (
-        <div className="w-full lg:max-w-xl">
+        <div className="w-full max-w-3xl mx-auto">
             <MembersList/>
         </div>
     )
 }
 
-export default WorkspaceIdMembersPage;
+export default WorkspaceIdMembersPage;

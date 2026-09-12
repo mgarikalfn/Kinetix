@@ -79,8 +79,9 @@ export default function ResetPasswordPage() {
       setTimeout(() => {
         router.push("/auth/signin");
       }, 3000);
-    } catch (error: any) {
-      setError("root", { message: error.message });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Failed to reset password";
+      setError("root", { message: msg });
     } finally {
       setIsLoading(false);
     }
